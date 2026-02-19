@@ -241,7 +241,7 @@ export default function App() {
     if (barF.length && !barF.some(b => p.barriers.includes(b))) return false;
     if (finF && p.financed !== finF) return false;
     return true;
-  }), [actorF, condF, incF, barF, finF]);
+  }), [PATHWAYS, actorF, condF, incF, barF, finF]);
 
   const matchCount = matches.filter(Boolean).length;
 
