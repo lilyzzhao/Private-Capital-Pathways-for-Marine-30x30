@@ -3,21 +3,39 @@ import Papa from "papaparse";
 import { SHEET_CSV_URL } from "../config.js";
 
 // Parse a semicolon-separated cell into a trimmed array
-const splitCell = (str) =>
-  str ? str.split(";").map(s => s.trim()).filter(Boolean) : [];
+// Handles extra whitespace, smart quotes, and BOM characters
+const splitCell = (str) => {
+  if (!str) return [];
+  return str
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // strip zero-width/BOM chars
+    .replace(/[""]/g, '"')                  // normalise smart quotes
+    .split(";")
+    .map(s => s.trim())
+    .filter(Boolean);
+};
+
+// Normalise a string for comparison — trim and collapse internal whitespace
+const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
 
 // Map a raw CSV row to a pathway object
-const rowToPathway = (row) => ({
-  id: Number(row.id),
-  name: (row.name || "").trim(),
-  actors: splitCell(row.actors),
-  enablingConditions: splitCell(row.enablingConditions),
-  incentives: splitCell(row.incentives),
-  barriers: splitCell(row.barriers),
-  financed: (row.financed || "").trim(),
-  summary: (row.summary || "").trim(),
-  examples: (row.examples || "").trim(),
-});
+// Row keys are normalised to handle slight header variations
+const rowToPathway = (row) => {
+  // Normalise all keys in case Google Sheets adds spaces to headers
+  const r = {};
+  Object.keys(row).forEach(k => { r[norm(k)] = row[k]; });
+
+  return {
+    id: Number(r.id),
+    name: norm(r.name),
+    actors: splitCell(r.actors),
+    enablingConditions: splitCell(r.enablingConditions),
+    incentives: splitCell(r.incentives),
+    barriers: splitCell(r.barriers),
+    financed: norm(r.financed),
+    summary: norm(r.summary),
+    examples: norm(r.examples),
+  };
+};
 
 export function usePathways() {
   const [pathways, setPathways] = useState([]);
@@ -45,7 +63,16 @@ export function usePathways() {
         } else {
           const parsed = results.data
             .map(rowToPathway)
-            .filter(p => p.id && p.name); // skip empty rows
+            .filter(p => p.id && p.name);
+          
+          // Debug: log first pathway so we can verify values match taxonomy
+          if (parsed.length > 0) {
+            console.log("✅ Pathways loaded:", parsed.length);
+            console.log("🔍 First pathway actors:", parsed[0].actors);
+            console.log("🔍 First pathway financed:", parsed[0].financed);
+            console.log("🔍 First pathway conditions:", parsed[0].enablingConditions);
+          }
+          
           setPathways(parsed);
           setLastUpdated(new Date());
         }
