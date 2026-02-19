@@ -15,7 +15,7 @@
 // For multi-value columns (actors, enablingConditions, incentives, barriers)
 // separate values with a semicolon: e.g.  Financial institutions; Impact investors
 
-export const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1ZyK1mWFgYdYvyiKc9ea2PQz4sRCv3OxkIQNmgLsf_58/edit?usp=sharing";
+export const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1ZyK1mWFgYdYvyiKc9ea2PQz4sRCv3OxkIQNmgLsf_58/gviz/tq?tqx=out:csv";
 
 // ── ALLOWED TAXONOMY VALUES ───────────────────────────────────────────────────
 // These drive the filter UI. Values in the sheet must match exactly.
